@@ -10,9 +10,34 @@ interface AIInsightsProps {
 }
 
 const AIInsights: React.FC<AIInsightsProps> = ({ professionals }) => {
+  // Check if there are any professionals to analyze
+  if (!professionals || professionals.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Zap className="mr-2 h-5 w-5 text-healthcare-primary" />
+            AI Performance Insights
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            No professionals data available. Add professionals to see AI insights.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Calculate some insights
   const averagePerformance = professionals.reduce((sum, prof) => sum + prof.performance, 0) / professionals.length;
-  const highestPerformer = [...professionals].sort((a, b) => b.performance - a.performance)[0];
+  
+  // Safely get highest performer
+  const highestPerformer = professionals.length > 0 
+    ? [...professionals].sort((a, b) => b.performance - a.performance)[0]
+    : null;
+  
+  // Get lowest metrics if professionals exist
   const lowestMetrics = professionals.flatMap(prof => 
     prof.metrics.map(metric => ({
       professionalName: prof.name,
@@ -44,7 +69,10 @@ const AIInsights: React.FC<AIInsightsProps> = ({ professionals }) => {
     average: data.total / data.count
   }));
   
-  const highestPerformingRole = roleAverages.sort((a, b) => b.average - a.average)[0];
+  // Safely get highest performing role
+  const highestPerformingRole = roleAverages.length > 0
+    ? roleAverages.sort((a, b) => b.average - a.average)[0]
+    : null;
   
   return (
     <div className="space-y-6">
@@ -79,57 +107,63 @@ const AIInsights: React.FC<AIInsightsProps> = ({ professionals }) => {
               </div>
             </div>
             
-            <div className="ai-recommendation">
-              <div className="flex items-start">
-                <Target className="h-5 w-5 mr-2 text-healthcare-primary" />
-                <div>
-                  <h3 className="font-medium">Top Performer Spotlight</h3>
-                  <p className="mt-1">
-                    <span className="font-bold">{highestPerformer.name}</span> ({highestPerformer.role}) 
-                    is your highest performing professional with a score of {highestPerformer.performance.toFixed(1)}%. 
-                    Consider having them mentor others or share best practices with the team.
-                  </p>
+            {highestPerformer && (
+              <div className="ai-recommendation">
+                <div className="flex items-start">
+                  <Target className="h-5 w-5 mr-2 text-healthcare-primary" />
+                  <div>
+                    <h3 className="font-medium">Top Performer Spotlight</h3>
+                    <p className="mt-1">
+                      <span className="font-bold">{highestPerformer.name}</span> ({highestPerformer.role}) 
+                      is your highest performing professional with a score of {highestPerformer.performance.toFixed(1)}%. 
+                      Consider having them mentor others or share best practices with the team.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             
-            <div className="ai-recommendation">
-              <div className="flex items-start">
-                <Lightbulb className="h-5 w-5 mr-2 text-healthcare-primary" />
-                <div>
-                  <h3 className="font-medium">Focus Areas for Improvement</h3>
-                  <p className="mt-1">
-                    The following metrics show the greatest opportunity for improvement:
-                  </p>
-                  <ul className="mt-2 space-y-1">
-                    {lowestMetrics.map((metric, index) => (
-                      <li key={index} className="flex items-center">
-                        <ArrowUpRight className="h-3 w-3 mr-1 text-healthcare-primary" />
-                        <span>
-                          <span className="font-medium">{metric.metricName}</span> for {metric.professionalName} ({metric.score}%)
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+            {lowestMetrics.length > 0 && (
+              <div className="ai-recommendation">
+                <div className="flex items-start">
+                  <Lightbulb className="h-5 w-5 mr-2 text-healthcare-primary" />
+                  <div>
+                    <h3 className="font-medium">Focus Areas for Improvement</h3>
+                    <p className="mt-1">
+                      The following metrics show the greatest opportunity for improvement:
+                    </p>
+                    <ul className="mt-2 space-y-1">
+                      {lowestMetrics.map((metric, index) => (
+                        <li key={index} className="flex items-center">
+                          <ArrowUpRight className="h-3 w-3 mr-1 text-healthcare-primary" />
+                          <span>
+                            <span className="font-medium">{metric.metricName}</span> for {metric.professionalName} ({metric.score}%)
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             
-            <div className="ai-recommendation">
-              <div className="flex items-start">
-                <BarChart3 className="h-5 w-5 mr-2 text-healthcare-primary" />
-                <div>
-                  <h3 className="font-medium">Role Performance Insights</h3>
-                  <p className="mt-1">
-                    <span className="font-bold">{highestPerformingRole.role}</span> is your highest performing role 
-                    with an average score of {highestPerformingRole.average.toFixed(1)}%. 
-                    {Object.keys(roleDistribution).length > 1 ? 
-                      ` You currently have ${professionals.length} professionals across ${Object.keys(roleDistribution).length} different roles.` : 
-                      ""}
-                  </p>
+            {highestPerformingRole && (
+              <div className="ai-recommendation">
+                <div className="flex items-start">
+                  <BarChart3 className="h-5 w-5 mr-2 text-healthcare-primary" />
+                  <div>
+                    <h3 className="font-medium">Role Performance Insights</h3>
+                    <p className="mt-1">
+                      <span className="font-bold">{highestPerformingRole.role}</span> is your highest performing role 
+                      with an average score of {highestPerformingRole.average.toFixed(1)}%. 
+                      {Object.keys(roleDistribution).length > 1 ? 
+                        ` You currently have ${professionals.length} professionals across ${Object.keys(roleDistribution).length} different roles.` : 
+                        ""}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             
             <div className="ai-recommendation">
               <div className="flex items-start">
