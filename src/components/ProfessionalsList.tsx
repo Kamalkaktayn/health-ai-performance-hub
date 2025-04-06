@@ -15,17 +15,20 @@ import { Progress } from "@/components/ui/progress";
 import { 
   TrendingUp, 
   TrendingDown, 
-  Minus 
+  Minus,
+  Trash2
 } from "lucide-react";
 
 interface ProfessionalsListProps {
   professionals: Professional[];
   onSelectProfessional: (professional: Professional) => void;
+  onDeleteProfessional: (id: string) => void;
 }
 
 const ProfessionalsList: React.FC<ProfessionalsListProps> = ({ 
   professionals,
-  onSelectProfessional
+  onSelectProfessional,
+  onDeleteProfessional
 }) => {
   const renderTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
@@ -46,6 +49,8 @@ const ProfessionalsList: React.FC<ProfessionalsListProps> = ({
         return 'default';
       case 'Psychiatrist':
         return 'secondary';
+      case 'Radiologist':
+        return 'outline';
       case 'Quality Assurance':
         return 'outline';
       case 'Healthcare IT':
@@ -97,9 +102,18 @@ const ProfessionalsList: React.FC<ProfessionalsListProps> = ({
                 </div>
               </TableCell>
               <TableCell className="text-right">
-                <Button size="sm" onClick={() => onSelectProfessional(professional)}>
-                  View Details
-                </Button>
+                <div className="flex justify-end gap-2">
+                  <Button size="sm" onClick={() => onSelectProfessional(professional)}>
+                    View Details
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={() => onDeleteProfessional(professional.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}

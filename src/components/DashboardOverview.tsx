@@ -48,6 +48,14 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ professionals }) 
   // Colors for pie chart
   const COLORS = ['#0EA5E9', '#7DD3FC', '#38BDF8', '#0284C7', '#4ADE80'];
   
+  // Custom formatter to ensure we're handling numbers correctly
+  const numberFormatter = (value: any) => {
+    if (typeof value === 'number') {
+      return value.toFixed(1);
+    }
+    return value;
+  };
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <Card className="col-span-1 md:col-span-2 lg:col-span-3">
@@ -67,7 +75,9 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ professionals }) 
                 <XAxis dataKey="name" />
                 <YAxis domain={[0, 100]} />
                 <Tooltip 
-                  formatter={(value) => [`${value.toFixed(1)}%`, 'Performance']}
+                  formatter={(value) => {
+                    return [numberFormatter(value) + '%', 'Performance'];
+                  }}
                   labelStyle={{ color: '#0F172A' }}
                   contentStyle={{ backgroundColor: 'white', borderRadius: '8px', borderColor: '#E2E8F0' }}
                 />
@@ -170,7 +180,9 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ professionals }) 
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value) => [`${value.toFixed(1)}%`, 'Performance']}
+                  formatter={(value) => {
+                    return [numberFormatter(value) + '%', 'Performance'];
+                  }}
                   labelStyle={{ color: '#0F172A' }}
                   contentStyle={{ backgroundColor: 'white', borderRadius: '8px', borderColor: '#E2E8F0' }}
                 />

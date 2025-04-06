@@ -13,15 +13,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 interface CompensationTableProps {
   professionals: Professional[];
   onSelectProfessional: (professional: Professional) => void;
+  onDeleteProfessional: (id: string) => void;
 }
 
 const CompensationTable: React.FC<CompensationTableProps> = ({ 
   professionals,
-  onSelectProfessional 
+  onSelectProfessional,
+  onDeleteProfessional
 }) => {
   // Calculate total compensation budget
   const totalSalary = professionals.reduce((sum, prof) => sum + prof.salary, 0);
@@ -108,9 +111,18 @@ const CompensationTable: React.FC<CompensationTableProps> = ({
                     ${(prof.salary + prof.bonus).toLocaleString(undefined, {maximumFractionDigits: 0})}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button size="sm" variant="outline" onClick={() => onSelectProfessional(prof)}>
-                      Details
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button size="sm" variant="outline" onClick={() => onSelectProfessional(prof)}>
+                        Details
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={() => onDeleteProfessional(prof.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

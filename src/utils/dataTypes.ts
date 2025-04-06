@@ -1,5 +1,5 @@
 
-export type Role = 'General Doctor' | 'Psychiatrist' | 'Quality Assurance' | 'Healthcare IT' | 'Lab Technician';
+export type Role = 'General Doctor' | 'Psychiatrist' | 'Radiologist' | 'Quality Assurance' | 'Healthcare IT' | 'Lab Technician';
 
 export interface Metric {
   name: string;
@@ -45,6 +45,14 @@ export const getRoleMetrics = (role: Role): Omit<Metric, 'score'>[] => {
         { name: 'Diagnosis Accuracy & Treatment', weight: 15, description: 'Accuracy of diagnoses and treatment plans' },
         { name: 'Documentation & Reporting', weight: 15, description: 'Quality of medical documentation' },
         { name: 'Collaboration & Communication', weight: 10, description: 'Effectiveness of interdisciplinary communication' }
+      ];
+    case 'Radiologist':
+      return [
+        { name: 'Diagnostic Accuracy', weight: 30, description: 'Precision and accuracy of diagnostic interpretations' },
+        { name: 'Report Turnaround Time', weight: 25, description: 'Speed of completing diagnostic reports' },
+        { name: 'Communication Quality', weight: 15, description: 'Effectiveness of communication with referring physicians' },
+        { name: 'Protocol Optimization', weight: 15, description: 'Appropriate use of imaging protocols' },
+        { name: 'Peer Reviews', weight: 15, description: 'Quality assessment by colleagues' }
       ];
     case 'Quality Assurance':
       return [
@@ -126,6 +134,18 @@ export const getRecommendations = (metrics: Metric[], role: Role): AIRecommendat
           recommendation = 'Implement more structured feedback mechanisms and work on communication techniques.';
         } else {
           recommendation = `Develop a structured improvement plan for ${metric.name.toLowerCase()}.`;
+        }
+        break;
+        
+      case 'Radiologist':
+        if (metric.name === 'Diagnostic Accuracy') {
+          recommendation = 'Participate in additional case review sessions and consider specialized training in challenging diagnostic areas.';
+        } else if (metric.name === 'Report Turnaround Time') {
+          recommendation = 'Implement dictation software and explore workflow optimizations to reduce reporting delays.';
+        } else if (metric.name === 'Communication Quality') {
+          recommendation = 'Schedule regular meetings with referring physicians to improve communication channels.';
+        } else {
+          recommendation = `Create a focused improvement plan for ${metric.name.toLowerCase()}.`;
         }
         break;
         

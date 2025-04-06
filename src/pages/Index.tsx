@@ -12,9 +12,11 @@ import AddProfessionalDialog from "@/components/AddProfessionalDialog";
 import { Professional } from "@/utils/dataTypes";
 import { generateInitialProfessionals } from "@/utils/mockData";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [activeProfessional, setActiveProfessional] = useState<Professional | null>(null);
@@ -37,6 +39,23 @@ const Index = () => {
   
   const handleAddProfessional = (newProfessional: Professional) => {
     setProfessionals([...professionals, newProfessional]);
+  };
+  
+  const handleDeleteProfessional = (id: string) => {
+    // If the professional being deleted is the active one, set activeProfessional to null
+    if (activeProfessional && activeProfessional.id === id) {
+      setActiveProfessional(null);
+    }
+    
+    // Filter out the professional with the given id
+    setProfessionals(professionals.filter(prof => prof.id !== id));
+    
+    // Show toast notification
+    toast({
+      title: "Professional Deleted",
+      description: "The professional has been removed from the system",
+      variant: "default"
+    });
   };
   
   const handleSelectProfessional = (professional: Professional) => {
@@ -94,6 +113,7 @@ const Index = () => {
               <ProfessionalsList 
                 professionals={professionals}
                 onSelectProfessional={handleSelectProfessional}
+                onDeleteProfessional={handleDeleteProfessional}
               />
               <div className="flex justify-end">
                 <button 
@@ -122,6 +142,7 @@ const Index = () => {
             <CompensationTable 
               professionals={professionals}
               onSelectProfessional={handleSelectProfessional}
+              onDeleteProfessional={handleDeleteProfessional}
             />
           )}
         </div>

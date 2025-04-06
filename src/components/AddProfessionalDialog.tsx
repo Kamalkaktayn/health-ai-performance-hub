@@ -116,6 +116,7 @@ const AddProfessionalDialog: React.FC<AddProfessionalDialogProps> = ({
                 <SelectContent>
                   <SelectItem value="General Doctor">General Doctor</SelectItem>
                   <SelectItem value="Psychiatrist">Psychiatrist</SelectItem>
+                  <SelectItem value="Radiologist">Radiologist</SelectItem>
                   <SelectItem value="Quality Assurance">Quality Assurance</SelectItem>
                   <SelectItem value="Healthcare IT">Healthcare IT</SelectItem>
                   <SelectItem value="Lab Technician">Lab Technician</SelectItem>

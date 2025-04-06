@@ -39,7 +39,8 @@ export const generateProfessional = (name: string, role: Role, department: strin
 export const generateInitialProfessionals = (): Professional[] => [
   generateProfessional('Dr. Sarah Johnson', 'General Doctor', 'Family Medicine', 180000),
   generateProfessional('Dr. Michael Chen', 'Psychiatrist', 'Mental Health', 210000),
-  generateProfessional('Emily Rodriguez', 'Quality Assurance', 'Operations', 95000),
+  generateProfessional('Dr. Emily Williams', 'Radiologist', 'Diagnostic Imaging', 225000),
   generateProfessional('James Wilson', 'Healthcare IT', 'Technology', 120000),
-  generateProfessional('Olivia Martinez', 'Lab Technician', 'Laboratory', 80000)
+  generateProfessional('Olivia Martinez', 'Lab Technician', 'Laboratory', 80000),
+  generateProfessional('Robert Thompson', 'Quality Assurance', 'Operations', 95000)
 ];
