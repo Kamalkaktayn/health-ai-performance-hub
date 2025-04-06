@@ -8,6 +8,14 @@ export interface Metric {
   description: string;
 }
 
+export interface CompensationTier {
+  tier: 1 | 2 | 3;
+  name: string;
+  description: string;
+  bonusPercentage: number;
+  color: string;
+}
+
 export interface Professional {
   id: string;
   name: string;
@@ -27,6 +35,40 @@ export interface AIRecommendation {
   recommendation: string;
   impact: 'high' | 'medium' | 'low';
 }
+
+export const compensationTiers: CompensationTier[] = [
+  {
+    tier: 1,
+    name: "Premium Performer",
+    description: "Top-percentile salary, 20% bonus potential, additional benefits",
+    bonusPercentage: 0.20,
+    color: "bg-green-600"
+  },
+  {
+    tier: 2,
+    name: "Core Performer",
+    description: "Mid-percentile salary, 10% bonus potential, standard benefits",
+    bonusPercentage: 0.10,
+    color: "bg-blue-500"
+  },
+  {
+    tier: 3,
+    name: "Development Focus",
+    description: "Lower-percentile salary, 5% bonus potential, development focus",
+    bonusPercentage: 0.05,
+    color: "bg-amber-500"
+  }
+];
+
+export const getCompensationTier = (performance: number): CompensationTier => {
+  if (performance >= 90) {
+    return compensationTiers[0]; // Tier 1
+  } else if (performance >= 80) {
+    return compensationTiers[1]; // Tier 2
+  } else {
+    return compensationTiers[2]; // Tier 3
+  }
+};
 
 export const getRoleMetrics = (role: Role): Omit<Metric, 'score'>[] => {
   switch (role) {
@@ -93,8 +135,8 @@ export const calculatePerformance = (metrics: Metric[]): number => {
 };
 
 export const calculateCompensation = (professional: Professional): number => {
-  const baseBonus = professional.salary * 0.15; // Maximum bonus is 15% of salary
-  return baseBonus * (professional.performance / 100); // Scale by performance percentage
+  const tier = getCompensationTier(professional.performance);
+  return professional.salary * tier.bonusPercentage * (professional.performance / 100);
 };
 
 export const getRecommendations = (metrics: Metric[], role: Role): AIRecommendation[] => {
