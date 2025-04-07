@@ -62,7 +62,17 @@ const AddProfessionalDialog: React.FC<AddProfessionalDialogProps> = ({
       return;
     }
     
-    const newProfessional = generateProfessional(name, role as Role, department, salaryCleaned);
+    // Pass only 3 arguments as expected by generateProfessional
+    const newProfessional = generateProfessional(name, role as Role, department);
+    
+    // Update the salary after generation if needed
+    if (salaryCleaned) {
+      newProfessional.salary = salaryCleaned;
+      // Recalculate bonus based on the new salary
+      const tier = newProfessional.performance / 100;
+      newProfessional.bonus = salaryCleaned * tier;
+    }
+    
     onAddProfessional(newProfessional);
     
     // Reset form
