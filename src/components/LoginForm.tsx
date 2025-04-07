@@ -15,7 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { XCircle } from "lucide-react";
+import { XCircle, UserCircle2 } from "lucide-react";
 import { mockUsers } from "@/utils/mockData";
 
 const formSchema = z.object({
@@ -58,10 +58,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <Card className="w-full max-w-md shadow-lg border-t-4 border-t-healthcare-primary">
         <CardHeader className="text-center bg-gradient-to-r from-healthcare-light to-white">
-          <CardTitle className="text-2xl font-bold">HealthPerform AI</CardTitle>
+          <div className="flex justify-center mb-2">
+            <div className="rounded-full bg-gradient-to-r from-blue-400 to-purple-500 p-2 shadow-lg">
+              <UserCircle2 className="h-10 w-10 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-gradient-primary bg-gradient-to-r from-blue-600 via-healthcare-primary to-purple-600">HealthPerform AI</CardTitle>
           <CardDescription>Sign in to access the performance management system</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
@@ -100,18 +105,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-healthcare-primary hover:bg-healthcare-primary/90">
+              <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                 Sign In
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2 text-sm text-gray-500">
-          <div>Demo Accounts:</div>
-          <div className="grid grid-cols-3 gap-2 w-full text-xs">
-            <div>admin@healthperform.org<br/>admin123</div>
-            <div>manager@healthperform.org<br/>manager123</div>
-            <div>viewer@healthperform.org<br/>viewer123</div>
+          <div className="text-center p-3 rounded-md bg-blue-50 border border-blue-100">
+            <div className="font-medium text-blue-700 mb-1">Demo Account</div>
+            <div className="text-xs">
+              <div className="font-medium">Email: admin@healthperform.org</div>
+              <div className="font-medium">Password: admin123</div>
+            </div>
           </div>
         </CardFooter>
       </Card>

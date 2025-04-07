@@ -43,6 +43,22 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* New color variables */
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 210 40% 98%;
+    --info: 199 89% 48%;
+    --info-foreground: 210 40% 98%;
+    --purple: 265 83% 45%;
+    --purple-foreground: 210 40% 98%;
+    --teal: 174 70% 40%;
+    --teal-foreground: 210 40% 98%;
+    --pink: 330 81% 60%;
+    --pink-foreground: 210 40% 98%;
+    --orange: 27 96% 61%;
+    --orange-foreground: 210 40% 98%;
   }
 
   .dark {
@@ -81,6 +97,22 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* New color variables for dark mode */
+    --success: 142 76% 45%;
+    --success-foreground: 210 40% 98%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 210 40% 98%;
+    --info: 199 89% 55%;
+    --info-foreground: 210 40% 98%;
+    --purple: 265 83% 55%;
+    --purple-foreground: 210 40% 98%;
+    --teal: 174 70% 50%;
+    --teal-foreground: 210 40% 98%;
+    --pink: 330 81% 65%;
+    --pink-foreground: 210 40% 98%;
+    --orange: 27 96% 66%;
+    --orange-foreground: 210 40% 98%;
   }
 }
 
@@ -113,5 +145,60 @@
   
   .professional-card {
     @apply bg-white rounded-xl shadow-md overflow-hidden transition-all hover:shadow-lg border border-healthcare-secondary/20;
+  }
+  
+  /* New gradient backgrounds */
+  .bg-gradient-blue {
+    @apply bg-gradient-to-r from-blue-500 to-cyan-500;
+  }
+  
+  .bg-gradient-purple {
+    @apply bg-gradient-to-r from-purple-500 to-pink-500;
+  }
+  
+  .bg-gradient-green {
+    @apply bg-gradient-to-r from-green-500 to-emerald-500;
+  }
+  
+  .bg-gradient-orange {
+    @apply bg-gradient-to-r from-orange-500 to-amber-500;
+  }
+  
+  .bg-gradient-red {
+    @apply bg-gradient-to-r from-red-500 to-pink-500;
+  }
+  
+  .bg-gradient-teal {
+    @apply bg-gradient-to-r from-teal-500 to-cyan-500;
+  }
+  
+  /* Text gradients */
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-600;
+  }
+  
+  .text-gradient-purple {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600;
+  }
+  
+  .text-gradient-success {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-600;
+  }
+  
+  /* Professional suggestion cards */
+  .suggestion-card {
+    @apply p-4 rounded-lg shadow-sm border-l-4 mb-3;
+  }
+  
+  .suggestion-card-low {
+    @apply border-orange-400 bg-orange-50;
+  }
+  
+  .suggestion-card-medium {
+    @apply border-blue-400 bg-blue-50;
+  }
+  
+  .suggestion-card-high {
+    @apply border-green-400 bg-green-50;
   }
 }
