@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import LoginForm from "@/components/LoginForm";
@@ -14,6 +13,7 @@ import {
   Menu
 } from "lucide-react";
 import ProfessionalSuggestions from "@/components/ProfessionalSuggestions";
+import ProfessionalDetails from "@/components/ProfessionalDetails";
 
 const PrototypeIndex = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
@@ -25,17 +25,13 @@ const PrototypeIndex = () => {
   const isMobile = window.innerWidth < 768;
   
   useEffect(() => {
-    // Generate initial data
     setProfessionals(generateInitialProfessionals());
-    
-    // Set sidebar based on screen size
     setIsSidebarOpen(!isMobile);
   }, []);
   
   const handleLogin = (userId: string) => {
     const user = mockUsers.find(u => u.id === userId);
     if (user) {
-      // Ensure we're properly casting the role to satisfy TypeScript
       const typedUser: User = {
         ...user,
         role: user.role as "admin" | "manager" | "viewer"
@@ -69,13 +65,24 @@ const PrototypeIndex = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
   
+  const handleProfessionalUpdate = (updatedProfessional: Professional) => {
+    setProfessionals(prevProfessionals =>
+      prevProfessionals.map(p => 
+        p.email === updatedProfessional.email ? updatedProfessional : p
+      )
+    );
+    
+    if (activeProfessional && activeProfessional.email === updatedProfessional.email) {
+      setActiveProfessional(updatedProfessional);
+    }
+  };
+  
   if (!isLoggedIn) {
     return <LoginForm onLoginSuccess={handleLogin} />;
   }
   
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
       <div 
         className={`${
           isSidebarOpen ? 'w-64' : 'w-0'
@@ -142,7 +149,6 @@ const PrototypeIndex = () => {
         </div>
       </div>
       
-      {/* Overlay for mobile */}
       {isMobile && isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-30"
@@ -150,10 +156,8 @@ const PrototypeIndex = () => {
         />
       )}
       
-      {/* Main content */}
       <div className="flex-1 p-6 overflow-auto">
         <div className={`max-w-7xl mx-auto transition-all duration-300 ${isSidebarOpen && !isMobile ? 'ml-0' : 'ml-0'}`}>
-          {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <Button 
               variant="outline" 
@@ -168,7 +172,6 @@ const PrototypeIndex = () => {
             </div>
           </div>
           
-          {/* Performance Tab with Suggestions */}
           {activeTab === 'performance' && activeProfessional && (
             <div className="space-y-4">
               <div className="p-4 bg-white rounded-lg shadow border-t-4 border-t-indigo-500">
@@ -176,11 +179,13 @@ const PrototypeIndex = () => {
                 <p className="text-gray-600">{activeProfessional.role} - {activeProfessional.department}</p>
               </div>
               
-              <ProfessionalSuggestions professional={activeProfessional} />
+              <ProfessionalDetails 
+                professional={activeProfessional} 
+                onProfessionalUpdate={handleProfessionalUpdate}
+              />
             </div>
           )}
           
-          {/* Dashboard Tab (Placeholder) */}
           {activeTab === 'dashboard' && (
             <div className="bg-white p-6 rounded-lg shadow">
               <h1 className="text-xl font-bold mb-4">Dashboard Overview</h1>
@@ -191,7 +196,6 @@ const PrototypeIndex = () => {
             </div>
           )}
           
-          {/* Professionals Tab (Placeholder) */}
           {activeTab === 'professionals' && (
             <div className="bg-white p-6 rounded-lg shadow">
               <h1 className="text-xl font-bold mb-4">Healthcare Professionals</h1>
@@ -216,7 +220,6 @@ const PrototypeIndex = () => {
             </div>
           )}
           
-          {/* Compensation Tab (Placeholder) */}
           {activeTab === 'compensation' && (
             <div className="bg-white p-6 rounded-lg shadow">
               <h1 className="text-xl font-bold mb-4">Compensation Dashboard</h1>

@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -33,6 +32,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import { 
   AIRecommendation, 
   Professional, 
@@ -41,17 +41,47 @@ import {
   Skill
 } from "@/utils/dataTypes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import EditProfessionalDialog from "./EditProfessionalDialog";
 
 interface ProfessionalDetailsProps {
   professional: Professional;
+  onProfessionalUpdate?: (updatedProfessional: Professional) => void;
 }
 
-const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional }) => {
-  const recommendations: AIRecommendation[] = getRecommendations(professional.metrics, professional.role);
-  const compensationTier = getCompensationTier(professional.performance);
+const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ 
+  professional,
+  onProfessionalUpdate 
+}) => {
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentProfessional, setCurrentProfessional] = useState<Professional>(professional);
+  
+  const recommendations: AIRecommendation[] = getRecommendations(currentProfessional.metrics, currentProfessional.role);
+  const compensationTier = getCompensationTier(currentProfessional.performance);
+  
+  const handleEditClick = () => {
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleEditClose = () => {
+    setIsEditDialogOpen(false);
+  };
+  
+  const handleSaveChanges = (updatedProfessional: Professional) => {
+    setCurrentProfessional(updatedProfessional);
+    
+    // If parent component provided update handler, call it
+    if (onProfessionalUpdate) {
+      onProfessionalUpdate(updatedProfessional);
+    }
+    
+    toast({
+      title: "Profile Updated",
+      description: `${updatedProfessional.name}'s profile has been updated successfully.`,
+    });
+  };
   
   const renderTrendIcon = () => {
-    switch (professional.trend) {
+    switch (currentProfessional.trend) {
       case 'up':
         return <TrendingUp className="h-4 w-4 text-green-500" />;
       case 'down':
@@ -79,9 +109,8 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
     return "bg-red-500";
   };
 
-  // AI Usage suggestion based on percentage
   const getAIUsageSuggestion = () => {
-    const { aiUsage, role } = professional;
+    const { aiUsage, role } = currentProfessional;
     
     if (role === 'General Doctor') {
       if (aiUsage <= 30) {
@@ -171,13 +200,11 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
     }
   };
 
-  // Performance suggestion based on professional's role and metrics
   const getPerformanceSuggestions = () => {
     const suggestions = [];
     
-    // Patient interaction quality for doctors
-    if (['General Doctor', 'Psychiatrist'].includes(professional.role)) {
-      const patientMetric = professional.metrics.find(m => 
+    if (['General Doctor', 'Psychiatrist'].includes(currentProfessional.role)) {
+      const patientMetric = currentProfessional.metrics.find(m => 
         m.name.includes('Patient') || m.name.includes('Satisfaction')
       );
       
@@ -205,9 +232,8 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
       }
     }
     
-    // Turnaround time for Radiologists
-    if (professional.role === 'Radiologist') {
-      const tatMetric = professional.metrics.find(m => m.name.includes('Turnaround'));
+    if (currentProfessional.role === 'Radiologist') {
+      const tatMetric = currentProfessional.metrics.find(m => m.name.includes('Turnaround'));
       
       if (tatMetric) {
         const score = tatMetric.score;
@@ -233,9 +259,8 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
       }
     }
     
-    // Lab Technician specific suggestions
-    if (professional.role === 'Lab Technician') {
-      const documentationMetric = professional.metrics.find(m => m.name.includes('Documentation'));
+    if (currentProfessional.role === 'Lab Technician') {
+      const documentationMetric = currentProfessional.metrics.find(m => m.name.includes('Documentation'));
       
       if (documentationMetric) {
         const score = documentationMetric.score;
@@ -261,9 +286,8 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
       }
     }
     
-    // Healthcare IT specific suggestions
-    if (professional.role === 'Healthcare IT') {
-      const implementationMetric = professional.metrics.find(m => 
+    if (currentProfessional.role === 'Healthcare IT') {
+      const implementationMetric = currentProfessional.metrics.find(m => 
         m.name.includes('Project') || m.name.includes('Delivery')
       );
       
@@ -291,8 +315,7 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
       }
     }
     
-    // Generic suggestion based on lowest metric
-    const lowestMetric = [...professional.metrics].sort((a, b) => a.score - b.score)[0];
+    const lowestMetric = [...currentProfessional.metrics].sort((a, b) => a.score - b.score)[0];
     if (lowestMetric && lowestMetric.score < 75) {
       suggestions.push({
         title: lowestMetric.name,
@@ -313,23 +336,23 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
         <CardHeader className="bg-gradient-to-r from-healthcare-light to-white">
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-xl font-bold">{professional.name}</CardTitle>
+              <CardTitle className="text-xl font-bold">{currentProfessional.name}</CardTitle>
               <CardDescription className="flex flex-col space-y-1">
-                <span>{professional.role} - {professional.department}</span>
+                <span>{currentProfessional.role} - {currentProfessional.department}</span>
                 <span className="flex items-center text-sm">
                   <Mail className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                  {professional.email}
+                  {currentProfessional.email}
                 </span>
-                {professional.phone && (
+                {currentProfessional.phone && (
                   <span className="flex items-center text-sm">
                     <Phone className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                    {professional.phone}
+                    {currentProfessional.phone}
                   </span>
                 )}
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={handleEditClick}>
                 <PenLine className="h-4 w-4 mr-2" />
                 Edit
               </Button>
@@ -352,15 +375,15 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                   <div className="relative mb-2">
                     <PieChart className="h-16 w-16 text-healthcare-primary" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-xl font-bold">{professional.performance.toFixed(1)}%</span>
+                      <span className="text-xl font-bold">{currentProfessional.performance.toFixed(1)}%</span>
                     </div>
                   </div>
                   <h3 className="text-lg font-medium">Overall Performance</h3>
                   <div className="flex items-center mt-2 text-sm">
                     {renderTrendIcon()}
                     <span className="ml-1">
-                      {professional.trend === 'up' ? 'Improving' : 
-                      professional.trend === 'down' ? 'Declining' : 'Stable'}
+                      {currentProfessional.trend === 'up' ? 'Improving' : 
+                      currentProfessional.trend === 'down' ? 'Declining' : 'Stable'}
                     </span>
                   </div>
                 </div>
@@ -384,13 +407,13 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                   <div>
                     <h4 className="font-medium mb-2">Performance Summary</h4>
                     <ul className="space-y-2">
-                      {professional.metrics.sort((a, b) => b.score - a.score).slice(0, 2).map((metric, i) => (
+                      {currentProfessional.metrics.sort((a, b) => b.score - a.score).slice(0, 2).map((metric, i) => (
                         <li key={i} className="flex items-center gap-2">
                           <ArrowUpRight className="h-4 w-4 text-green-500" />
                           <span>Strongest in <span className="font-medium">{metric.name}</span> ({metric.score}%)</span>
                         </li>
                       ))}
-                      {professional.metrics.sort((a, b) => a.score - b.score).slice(0, 1).map((metric, i) => (
+                      {currentProfessional.metrics.sort((a, b) => a.score - b.score).slice(0, 1).map((metric, i) => (
                         <li key={i} className="flex items-center gap-2">
                           <ArrowUpRight className="h-4 w-4 text-red-500 rotate-180" />
                           <span>Needs improvement in <span className="font-medium">{metric.name}</span> ({metric.score}%)</span>
@@ -401,7 +424,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                 </div>
               </div>
               
-              {/* Professional Summary Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="col-span-1 bg-white p-6 rounded-lg shadow-md border border-gray-100">
                   <div className="flex items-center gap-2 mb-4">
@@ -411,15 +433,15 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                   <div className="mb-2">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm text-gray-600">AI Usage</span>
-                      <span className="font-bold text-lg">{professional.aiUsage}%</span>
+                      <span className="font-bold text-lg">{currentProfessional.aiUsage}%</span>
                     </div>
                     <Progress 
-                      value={professional.aiUsage} 
+                      value={currentProfessional.aiUsage} 
                       className="h-2.5 bg-purple-100"
                     />
                     <p className="text-sm mt-2 text-gray-600">
-                      {professional.aiUsage >= 80 ? "Heavy AI user" : 
-                       professional.aiUsage >= 60 ? "Moderate AI user" : 
+                      {currentProfessional.aiUsage >= 80 ? "Heavy AI user" : 
+                       currentProfessional.aiUsage >= 60 ? "Moderate AI user" : 
                        "Light AI user"}
                     </p>
                   </div>
@@ -431,12 +453,12 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                     <h3 className="text-lg font-medium">Experience</h3>
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-bold text-xl">{professional.yearsOfExperience} years</span>
-                    <span className="text-sm text-gray-600">in {professional.role} role</span>
-                    {professional.education && (
+                    <span className="font-bold text-xl">{currentProfessional.yearsOfExperience} years</span>
+                    <span className="text-sm text-gray-600">in {currentProfessional.role} role</span>
+                    {currentProfessional.education && (
                       <div className="mt-2 flex items-center">
                         <GraduationCap className="h-4 w-4 mr-1 text-gray-500" />
-                        <span className="text-sm">{professional.education}</span>
+                        <span className="text-sm">{currentProfessional.education}</span>
                       </div>
                     )}
                   </div>
@@ -448,7 +470,7 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                     <h3 className="text-lg font-medium">Certifications</h3>
                   </div>
                   <ul className="space-y-2">
-                    {professional.certifications.map((cert, index) => (
+                    {currentProfessional.certifications.map((cert, index) => (
                       <li key={index} className="flex items-center">
                         <Badge variant="outline" className="mr-2 bg-amber-50">
                           <Award className="h-3 w-3 mr-1 text-amber-500" />
@@ -482,10 +504,9 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
               </div>
             </TabsContent>
             
-            {/* Skills & Expertise Tab */}
             <TabsContent value="skills" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {professional.skills.map((skill, index) => (
+                {currentProfessional.skills.map((skill, index) => (
                   <div key={index} className="bg-white p-5 rounded-lg shadow-md border border-gray-100">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center">
@@ -515,7 +536,7 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {professional.skills
+                    {currentProfessional.skills
                       .filter(skill => skill.level < 80)
                       .slice(0, 2)
                       .map((skill, index) => (
@@ -527,7 +548,7 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                         </p>
                       </div>
                     ))}
-                    {professional.aiUsage < 60 && (
+                    {currentProfessional.aiUsage < 60 && (
                       <div className="p-3 bg-purple-50 rounded-md">
                         <h4 className="font-medium text-purple-700">Increase AI Tool Adoption</h4>
                         <p className="text-sm mt-1">
@@ -541,7 +562,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
               </Card>
             </TabsContent>
             
-            {/* New Suggestions Tab */}
             <TabsContent value="suggestions" className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
                 <Card className="overflow-hidden border-t-4 border-t-healthcare-primary">
@@ -551,7 +571,7 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                       <CardTitle className="text-lg">AI-Powered Performance Suggestions</CardTitle>
                     </div>
                     <CardDescription>
-                      Tailored recommendations based on {professional.name}'s performance data
+                      Tailored recommendations based on {currentProfessional.name}'s performance data
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6">
@@ -570,7 +590,7 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                               {aiUsageSuggestion.level === 'high' && <Trophy className="h-5 w-5 text-green-500" />}
                             </div>
                             <div className="ml-3">
-                              <h4 className="font-medium">AI Usage Rate: {professional.aiUsage}%</h4>
+                              <h4 className="font-medium">AI Usage Rate: {currentProfessional.aiUsage}%</h4>
                               <p className="text-sm mt-1">{aiUsageSuggestion.text}</p>
                             </div>
                           </div>
@@ -633,7 +653,7 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
             
             <TabsContent value="metrics" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {professional.metrics.map((metric, index) => (
+                {currentProfessional.metrics.map((metric, index) => (
                   <div key={index} className="bg-white p-5 rounded-lg shadow-md border border-gray-100">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center">
@@ -666,13 +686,13 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                   <div className="p-5 border rounded-lg bg-gradient-to-br from-white to-healthcare-light shadow-md">
                     <div className="text-sm text-muted-foreground">Base Salary</div>
-                    <div className="text-xl font-bold">${professional.salary.toLocaleString()}</div>
+                    <div className="text-xl font-bold">${currentProfessional.salary.toLocaleString()}</div>
                   </div>
                   
                   <div className="p-5 border rounded-lg bg-gradient-to-br from-white to-healthcare-light shadow-md">
                     <div className="text-sm text-muted-foreground">Performance Bonus</div>
                     <div className="text-xl font-bold text-healthcare-primary">
-                      ${professional.bonus.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                      ${currentProfessional.bonus.toLocaleString(undefined, {maximumFractionDigits: 0})}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {(compensationTier.bonusPercentage * 100).toFixed(0)}% of base salary
@@ -682,7 +702,7 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                   <div className={`p-5 rounded-lg shadow-md ${getTierColor(compensationTier.tier)}`}>
                     <div className="text-sm opacity-90">Total Compensation</div>
                     <div className="text-xl font-bold">
-                      ${(professional.salary + professional.bonus).toLocaleString(undefined, {maximumFractionDigits: 0})}
+                      ${(currentProfessional.salary + currentProfessional.bonus).toLocaleString(undefined, {maximumFractionDigits: 0})}
                     </div>
                     <div className="text-xs opacity-90">Tier {compensationTier.tier} ({compensationTier.name})</div>
                   </div>
@@ -740,6 +760,13 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
           </Tabs>
         </CardContent>
       </Card>
+      
+      <EditProfessionalDialog 
+        professional={currentProfessional}
+        isOpen={isEditDialogOpen}
+        onClose={handleEditClose}
+        onSave={handleSaveChanges}
+      />
     </div>
   );
 };
