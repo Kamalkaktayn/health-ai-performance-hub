@@ -14,6 +14,7 @@ import { Professional, User } from "@/utils/dataTypes";
 import { generateInitialProfessionals, mockUsers } from "@/utils/mockData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -75,7 +76,13 @@ const Index = () => {
   const handleLogin = (userId: string) => {
     const user = mockUsers.find(u => u.id === userId);
     if (user) {
-      setCurrentUser(user);
+      // Ensure we're properly casting the role to satisfy TypeScript
+      const typedUser: User = {
+        ...user,
+        role: user.role as "admin" | "manager" | "viewer"
+      };
+      
+      setCurrentUser(typedUser);
       setIsLoggedIn(true);
       
       toast({

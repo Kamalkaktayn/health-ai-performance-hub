@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu";
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -83,7 +83,7 @@ const PerformanceNavigation: React.FC<PerformanceNavigationProps> = ({
             <span className="text-xs text-muted-foreground capitalize">{userRole}</span>
           </div>
           <Avatar className="h-8 w-8 bg-healthcare-primary text-white">
-            <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+            <AvatarFallback>{userName.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
         </div>
       )}
