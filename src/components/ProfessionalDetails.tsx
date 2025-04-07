@@ -20,14 +20,21 @@ import {
   PenLine,
   UserCog,
   Award,
-  Trophy
+  Trophy,
+  Mail,
+  Phone,
+  GraduationCap,
+  BrainCircuit,
+  Sparkles,
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   AIRecommendation, 
   Professional, 
   getRecommendations, 
-  getCompensationTier 
+  getCompensationTier,
+  Skill
 } from "@/utils/dataTypes";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -60,6 +67,13 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
       default: return "bg-gray-100";
     }
   };
+
+  const getSkillColor = (level: number) => {
+    if (level >= 90) return "bg-green-500";
+    if (level >= 80) return "bg-blue-500";
+    if (level >= 70) return "bg-yellow-500";
+    return "bg-red-500";
+  };
   
   return (
     <div className="space-y-6">
@@ -68,7 +82,19 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="text-xl font-bold">{professional.name}</CardTitle>
-              <CardDescription>{professional.role} - {professional.department}</CardDescription>
+              <CardDescription className="flex flex-col space-y-1">
+                <span>{professional.role} - {professional.department}</span>
+                <span className="flex items-center text-sm">
+                  <Mail className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                  {professional.email}
+                </span>
+                {professional.phone && (
+                  <span className="flex items-center text-sm">
+                    <Phone className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                    {professional.phone}
+                  </span>
+                )}
+              </CardDescription>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm">
@@ -80,9 +106,10 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
         </CardHeader>
         <CardContent className="p-6">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid grid-cols-3 mb-6">
+            <TabsList className="grid grid-cols-4 mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="metrics">Performance Metrics</TabsTrigger>
+              <TabsTrigger value="skills">Skills & Expertise</TabsTrigger>
               <TabsTrigger value="compensation">Compensation</TabsTrigger>
             </TabsList>
             
@@ -141,6 +168,66 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                 </div>
               </div>
               
+              {/* Professional Summary Section */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="col-span-1 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                  <div className="flex items-center gap-2 mb-4">
+                    <BrainCircuit className="h-5 w-5 text-purple-500" />
+                    <h3 className="text-lg font-medium">AI Integration</h3>
+                  </div>
+                  <div className="mb-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm text-gray-600">AI Usage</span>
+                      <span className="font-bold text-lg">{professional.aiUsage}%</span>
+                    </div>
+                    <Progress 
+                      value={professional.aiUsage} 
+                      className="h-2.5"
+                      indicatorClassName="bg-gradient-to-r from-purple-400 to-purple-600"
+                    />
+                    <p className="text-sm mt-2 text-gray-600">
+                      {professional.aiUsage >= 80 ? "Heavy AI user" : 
+                       professional.aiUsage >= 60 ? "Moderate AI user" : 
+                       "Light AI user"}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="col-span-1 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Clock className="h-5 w-5 text-blue-500" />
+                    <h3 className="text-lg font-medium">Experience</h3>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-xl">{professional.yearsOfExperience} years</span>
+                    <span className="text-sm text-gray-600">in {professional.role} role</span>
+                    {professional.education && (
+                      <div className="mt-2 flex items-center">
+                        <GraduationCap className="h-4 w-4 mr-1 text-gray-500" />
+                        <span className="text-sm">{professional.education}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="col-span-1 bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sparkles className="h-5 w-5 text-amber-500" />
+                    <h3 className="text-lg font-medium">Certifications</h3>
+                  </div>
+                  <ul className="space-y-2">
+                    {professional.certifications.map((cert, index) => (
+                      <li key={index} className="flex items-center">
+                        <Badge variant="outline" className="mr-2 bg-amber-50">
+                          <Award className="h-3 w-3 mr-1 text-amber-500" />
+                        </Badge>
+                        <span className="text-sm">{cert}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              
               <div>
                 <div className="flex items-center mb-4">
                   <UserCog className="h-5 w-5 mr-2 text-healthcare-primary" />
@@ -161,6 +248,66 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                   ))}
                 </div>
               </div>
+            </TabsContent>
+            
+            {/* Skills & Expertise Tab */}
+            <TabsContent value="skills" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {professional.skills.map((skill, index) => (
+                  <div key={index} className="bg-white p-5 rounded-lg shadow-md border border-gray-100">
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center">
+                        <span className="font-medium">{skill.name}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-lg font-bold">{skill.level}%</span>
+                      </div>
+                    </div>
+                    <Progress 
+                      value={skill.level} 
+                      className="h-2.5 mb-2"
+                      indicatorClassName={`bg-${getSkillColor(skill.level)}`}
+                    />
+                    <div className="flex mt-2 justify-between">
+                      <span className="text-xs text-gray-500">Beginner</span>
+                      <span className="text-xs text-gray-500">Intermediate</span>
+                      <span className="text-xs text-gray-500">Advanced</span>
+                      <span className="text-xs text-gray-500">Expert</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">AI Skill Development Recommendations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {professional.skills
+                      .filter(skill => skill.level < 80)
+                      .slice(0, 2)
+                      .map((skill, index) => (
+                      <div key={index} className="p-3 bg-blue-50 rounded-md">
+                        <h4 className="font-medium text-blue-700">Improve {skill.name} Proficiency</h4>
+                        <p className="text-sm mt-1">
+                          Our AI recommends targeted training to improve {skill.name.toLowerCase()} skills. 
+                          Consider enrolling in our virtual training program to enhance proficiency.
+                        </p>
+                      </div>
+                    ))}
+                    {professional.aiUsage < 60 && (
+                      <div className="p-3 bg-purple-50 rounded-md">
+                        <h4 className="font-medium text-purple-700">Increase AI Tool Adoption</h4>
+                        <p className="text-sm mt-1">
+                          This professional could benefit from greater AI tool adoption in their workflow.
+                          Consider scheduling an AI tools training session.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
             
             <TabsContent value="metrics" className="space-y-6">

@@ -1,4 +1,3 @@
-
 export type Role = 'General Doctor' | 'Psychiatrist' | 'Radiologist' | 'Quality Assurance' | 'Healthcare IT' | 'Lab Technician';
 
 export interface Metric {
@@ -16,6 +15,11 @@ export interface CompensationTier {
   color: string;
 }
 
+export interface Skill {
+  name: string;
+  level: number; // 1-100
+}
+
 export interface Professional {
   id: string;
   name: string;
@@ -28,12 +32,27 @@ export interface Professional {
   bonus: number;
   trend: 'up' | 'down' | 'stable';
   lastUpdated: string;
+  skills: Skill[];
+  aiUsage: number; // percentage of AI usage in daily work
+  yearsOfExperience: number;
+  certifications: string[];
+  email: string;
+  phone?: string;
+  education?: string;
 }
 
 export interface AIRecommendation {
   metric: string;
   recommendation: string;
   impact: 'high' | 'medium' | 'low';
+}
+
+export interface User {
+  id: string;
+  email: string;
+  password: string;
+  name: string;
+  role: 'admin' | 'manager' | 'viewer';
 }
 
 export const compensationTiers: CompensationTier[] = [

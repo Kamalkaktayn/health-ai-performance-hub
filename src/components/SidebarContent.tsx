@@ -21,14 +21,25 @@ interface SidebarContentProps {
   activeProfessional: Professional | null;
   setActiveProfessional: (professional: Professional | null) => void;
   onAddProfessional: () => void;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  onLogout: () => void;
 }
 
 const SidebarContent: React.FC<SidebarContentProps> = ({ 
   professionals, 
   activeProfessional,
   setActiveProfessional,
-  onAddProfessional
+  onAddProfessional,
+  activeTab,
+  setActiveTab,
+  onLogout
 }) => {
+  const handleTabClick = (tab: string) => {
+    setActiveTab(tab);
+    setActiveProfessional(null);
+  };
+  
   return (
     <div className="flex flex-col h-full p-4">
       <div className="flex items-center gap-2 mb-6">
@@ -39,27 +50,51 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
       </div>
       
       <div className="space-y-1 mb-6">
-        <Button variant="ghost" className="w-full justify-start gap-2">
+        <Button 
+          variant={activeTab === 'dashboard' ? "secondary" : "ghost"} 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('dashboard')}
+        >
           <BarChart3 className="h-4 w-4" />
           Dashboard
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-2">
+        <Button 
+          variant={activeTab === 'professionals' ? "secondary" : "ghost"} 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('professionals')}
+        >
           <Users className="h-4 w-4" />
           Professionals
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-2">
+        <Button 
+          variant={activeTab === 'performance' ? "secondary" : "ghost"} 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('performance')}
+        >
           <UserCog className="h-4 w-4" />
           Performance
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-2">
+        <Button 
+          variant={activeTab === 'compensation' ? "secondary" : "ghost"} 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('compensation')}
+        >
           <DollarSign className="h-4 w-4" />
           Compensation
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-2">
+        <Button 
+          variant={activeTab === 'reports' ? "secondary" : "ghost"} 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('reports')}
+        >
           <FileText className="h-4 w-4" />
           Reports
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-2">
+        <Button 
+          variant={activeTab === 'schedule' ? "secondary" : "ghost"} 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('schedule')}
+        >
           <CalendarDays className="h-4 w-4" />
           Schedule
         </Button>
@@ -80,7 +115,10 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
             key={professional.id}
             variant={activeProfessional?.id === professional.id ? "secondary" : "ghost"}
             className="w-full justify-start text-left"
-            onClick={() => setActiveProfessional(professional)}
+            onClick={() => {
+              setActiveProfessional(professional);
+              setActiveTab('performance');
+            }}
           >
             <div className="truncate">
               <div className="font-medium">{professional.name}</div>
@@ -92,11 +130,19 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
       
       <div className="mt-auto">
         <Separator className="my-4" />
-        <Button variant="ghost" className="w-full justify-start gap-2">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('settings')}
+        >
           <Settings className="h-4 w-4" />
           Settings
         </Button>
-        <Button variant="ghost" className="w-full justify-start gap-2 text-red-500">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start gap-2 text-red-500"
+          onClick={onLogout}
+        >
           <LogOut className="h-4 w-4" />
           Logout
         </Button>

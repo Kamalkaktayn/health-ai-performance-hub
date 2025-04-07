@@ -9,8 +9,9 @@ import PerformanceMetricsCards from "@/components/PerformanceMetricsCards";
 import CompensationTable from "@/components/CompensationTable";
 import AIInsights from "@/components/AIInsights";
 import AddProfessionalDialog from "@/components/AddProfessionalDialog";
-import { Professional } from "@/utils/dataTypes";
-import { generateInitialProfessionals } from "@/utils/mockData";
+import LoginForm from "@/components/LoginForm";
+import { Professional, User } from "@/utils/dataTypes";
+import { generateInitialProfessionals, mockUsers } from "@/utils/mockData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -22,6 +23,8 @@ const Index = () => {
   const [activeProfessional, setActiveProfessional] = useState<Professional | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   useEffect(() => {
     // Generate initial data
@@ -39,6 +42,12 @@ const Index = () => {
   
   const handleAddProfessional = (newProfessional: Professional) => {
     setProfessionals([...professionals, newProfessional]);
+    
+    toast({
+      title: "Professional Added",
+      description: "New professional has been added to the system",
+      variant: "default"
+    });
   };
   
   const handleDeleteProfessional = (id: string) => {
@@ -63,6 +72,37 @@ const Index = () => {
     setActiveTab('performance');
   };
   
+  const handleLogin = (userId: string) => {
+    const user = mockUsers.find(u => u.id === userId);
+    if (user) {
+      setCurrentUser(user);
+      setIsLoggedIn(true);
+      
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${user.name}`,
+        variant: "default"
+      });
+    }
+  };
+  
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    setActiveTab('dashboard');
+    setActiveProfessional(null);
+    
+    toast({
+      title: "Logged Out",
+      description: "You have been logged out successfully",
+      variant: "default"
+    });
+  };
+  
+  if (!isLoggedIn) {
+    return <LoginForm onLoginSuccess={handleLogin} />;
+  }
+  
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
@@ -76,6 +116,9 @@ const Index = () => {
           activeProfessional={activeProfessional}
           setActiveProfessional={setActiveProfessional}
           onAddProfessional={() => setIsAddDialogOpen(true)}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onLogout={handleLogout}
         />
       </div>
       
@@ -95,6 +138,8 @@ const Index = () => {
             setActiveTab={setActiveTab}
             isSidebarOpen={isSidebarOpen}
             toggleSidebar={toggleSidebar}
+            userName={currentUser?.name || ''}
+            userRole={currentUser?.role || 'viewer'}
           />
           
           {/* Dashboard Tab */}
@@ -144,6 +189,80 @@ const Index = () => {
               onSelectProfessional={handleSelectProfessional}
               onDeleteProfessional={handleDeleteProfessional}
             />
+          )}
+          
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <div className="space-y-6">
+              <Card className="overflow-hidden border-t-4 border-t-healthcare-primary">
+                <CardHeader className="bg-gradient-to-r from-healthcare-light to-white">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-xl font-bold">Account Settings</CardTitle>
+                      <CardDescription>Manage your account settings and preferences</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-sm font-medium">Name</span>
+                      <span>{currentUser?.name}</span>
+                    </div>
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-sm font-medium">Email</span>
+                      <span>{currentUser?.email}</span>
+                    </div>
+                    <div className="flex flex-col space-y-1">
+                      <span className="text-sm font-medium">Role</span>
+                      <span className="capitalize">{currentUser?.role}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
+          {/* Reports Tab */}
+          {activeTab === 'reports' && (
+            <div className="space-y-6">
+              <Card className="overflow-hidden border-t-4 border-t-healthcare-primary">
+                <CardHeader className="bg-gradient-to-r from-healthcare-light to-white">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-xl font-bold">Reports</CardTitle>
+                      <CardDescription>View and generate performance reports</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Reports functionality is under development</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
+          {/* Schedule Tab */}
+          {activeTab === 'schedule' && (
+            <div className="space-y-6">
+              <Card className="overflow-hidden border-t-4 border-t-healthcare-primary">
+                <CardHeader className="bg-gradient-to-r from-healthcare-light to-white">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-xl font-bold">Schedule</CardTitle>
+                      <CardDescription>View and manage performance review schedules</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Schedule functionality is under development</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           )}
         </div>
       </div>
