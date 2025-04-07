@@ -3,7 +3,7 @@ import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Professional, Skill } from "@/utils/dataTypes";
+import { Professional, Role, Skill } from "@/utils/dataTypes";
 import { 
   Dialog,
   DialogContent,
@@ -23,6 +23,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface EditProfessionalDialogProps {
   professional: Professional;
@@ -38,7 +45,7 @@ const formSchema = z.object({
   phone: z.string().optional(),
   education: z.string().optional(),
   yearsOfExperience: z.coerce.number().min(0, { message: "Experience must be a positive number." }),
-  role: z.string().min(1, { message: "Role is required." }),
+  role: z.enum(['General Doctor', 'Psychiatrist', 'Radiologist', 'Quality Assurance', 'Healthcare IT', 'Lab Technician']),
   department: z.string().min(1, { message: "Department is required." }),
 });
 
@@ -72,7 +79,7 @@ const EditProfessionalDialog: React.FC<EditProfessionalDialogProps> = ({
       phone: values.phone || professional.phone,
       education: values.education || professional.education,
       yearsOfExperience: values.yearsOfExperience,
-      role: values.role,
+      role: values.role as Role, // This cast is now safe because we've constrained the input
       department: values.department,
     };
 
@@ -159,9 +166,24 @@ const EditProfessionalDialog: React.FC<EditProfessionalDialogProps> = ({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Role</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="General Doctor">General Doctor</SelectItem>
+                        <SelectItem value="Psychiatrist">Psychiatrist</SelectItem>
+                        <SelectItem value="Radiologist">Radiologist</SelectItem>
+                        <SelectItem value="Quality Assurance">Quality Assurance</SelectItem>
+                        <SelectItem value="Healthcare IT">Healthcare IT</SelectItem>
+                        <SelectItem value="Lab Technician">Lab Technician</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
