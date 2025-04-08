@@ -118,6 +118,15 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
           <Video className="h-4 w-4" />
           Interviews
         </Button>
+        <Button 
+          variant={activeTab === 'notifications' ? "secondary" : "ghost"} 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('notifications')}
+        >
+          <Bell className="h-4 w-4" />
+          Notifications
+          <span className="ml-auto bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+        </Button>
       </div>
       
       <Separator className="my-4" />

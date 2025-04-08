@@ -12,6 +12,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Role, Metric, getRoleMetrics, calculatePerformance } from "@/utils/dataTypes";
 import { BarChart, Activity, Users, ChartLine, Calendar, Mail, Video, Bell, Check, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 const EngagementTech: React.FC = () => {
   const [name, setName] = useState("");
@@ -21,6 +28,7 @@ const EngagementTech: React.FC = () => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [employeeEmail, setEmployeeEmail] = useState("");
   const [interviewDate, setInterviewDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [aiUsageExceeded, setAiUsageExceeded] = useState<boolean>(false);
   const [isNewEmployee, setIsNewEmployee] = useState<boolean>(false);
   const [showInterviewOption, setShowInterviewOption] = useState<boolean>(false);
@@ -28,6 +36,27 @@ const EngagementTech: React.FC = () => {
   const [interviewDialogOpen, setInterviewDialogOpen] = useState<boolean>(false);
   const [interviewScheduled, setInterviewScheduled] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("calculator");
+  const [calendarOpen, setCalendarOpen] = useState(false);
+
+  // Form schema for interview scheduling
+  const formSchema = z.object({
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    date: z.date({ required_error: "Please select a date for the interview" }),
+    time: z.string().min(1, { message: "Please select a time" }),
+    method: z.string().min(1, { message: "Please select an interview method" }),
+    notes: z.string().optional(),
+  });
+
+  // Initialize the form
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      time: "10:00",
+      method: "video",
+      notes: "",
+    },
+  });
 
   // Initialize metrics when role changes
   React.useEffect(() => {
@@ -96,31 +125,28 @@ const EngagementTech: React.FC = () => {
     });
   };
   
-  const handleInterviewSchedule = () => {
-    if (!employeeEmail) {
-      toast({
-        title: "Email Required",
-        description: "Please enter the employee's email address",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!interviewDate) {
-      toast({
-        title: "Date Required",
-        description: "Please select an interview date",
-        variant: "destructive"
-      });
-      return;
-    }
+  const handleInterviewSchedule = (values: z.infer<typeof formSchema>) => {
+    const formattedDate = format(values.date, "yyyy-MM-dd");
+    const dateTimeString = `${formattedDate} at ${values.time}`;
     
     setInterviewScheduled(true);
     setInterviewDialogOpen(false);
+    setEmployeeEmail(values.email);
+    setInterviewDate(dateTimeString);
     
+    // Simulate sending calendar invite
+    console.log("Sending calendar invite to:", values.email);
+    console.log("Interview details:", {
+      date: formattedDate,
+      time: values.time,
+      method: values.method,
+      notes: values.notes
+    });
+    
+    // Show success notification
     toast({
       title: "Interview Scheduled",
-      description: `Interview scheduled with ${name} on ${interviewDate}. Invitation sent to ${employeeEmail}.`,
+      description: `Interview scheduled with ${name} on ${dateTimeString}. Calendar invitation sent to ${values.email}.`,
     });
   };
   
@@ -141,6 +167,7 @@ const EngagementTech: React.FC = () => {
     setInterviewScheduled(false);
     setIsNewEmployee(false);
     setStep(1);
+    form.reset();
   };
   
   const goToNextStep = () => {
@@ -357,56 +384,134 @@ const EngagementTech: React.FC = () => {
                                 Schedule Interview
                               </Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="max-w-md">
                               <DialogHeader>
                                 <DialogTitle>Schedule Interview</DialogTitle>
                                 <DialogDescription>
                                   Set up an interview with {name} to discuss their performance and potential.
                                 </DialogDescription>
                               </DialogHeader>
-                              <div className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                  <Label htmlFor="email">Email Address</Label>
-                                  <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="employee@example.com"
-                                    value={employeeEmail}
-                                    onChange={(e) => setEmployeeEmail(e.target.value)}
+                              
+                              <Form {...form}>
+                                <form onSubmit={form.handleSubmit(handleInterviewSchedule)} className="space-y-4 py-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Email Address</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="employee@example.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
                                   />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor="date">Interview Date</Label>
-                                  <Input
-                                    id="date"
-                                    type="date"
-                                    value={interviewDate}
-                                    onChange={(e) => setInterviewDate(e.target.value)}
-                                    min={new Date().toISOString().split('T')[0]}
+                                  
+                                  <FormField
+                                    control={form.control}
+                                    name="date"
+                                    render={({ field }) => (
+                                      <FormItem className="flex flex-col">
+                                        <FormLabel>Interview Date</FormLabel>
+                                        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                                          <PopoverTrigger asChild>
+                                            <Button
+                                              variant="outline"
+                                              className="justify-start text-left font-normal"
+                                            >
+                                              <Calendar className="mr-2 h-4 w-4" />
+                                              {field.value ? (
+                                                format(field.value, "PPP")
+                                              ) : (
+                                                <span>Select date</span>
+                                              )}
+                                            </Button>
+                                          </PopoverTrigger>
+                                          <PopoverContent className="w-auto p-0" align="start">
+                                            <CalendarComponent
+                                              mode="single"
+                                              selected={field.value}
+                                              onSelect={(date) => {
+                                                field.onChange(date);
+                                                setCalendarOpen(false);
+                                              }}
+                                              disabled={(date) =>
+                                                date < new Date(new Date().setHours(0, 0, 0, 0))
+                                              }
+                                              initialFocus
+                                            />
+                                          </PopoverContent>
+                                        </Popover>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
                                   />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor="method">Interview Method</Label>
-                                  <Select defaultValue="video">
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select method" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="video">Video Conference</SelectItem>
-                                      <SelectItem value="in-person">In Person</SelectItem>
-                                      <SelectItem value="phone">Phone Call</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                              <DialogFooter>
-                                <Button variant="outline" onClick={() => setInterviewDialogOpen(false)}>
-                                  Cancel
-                                </Button>
-                                <Button onClick={handleInterviewSchedule}>
-                                  Send Invitation
-                                </Button>
-                              </DialogFooter>
+                                  
+                                  <FormField
+                                    control={form.control}
+                                    name="time"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Interview Time</FormLabel>
+                                        <FormControl>
+                                          <Input type="time" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  
+                                  <FormField
+                                    control={form.control}
+                                    name="method"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Interview Method</FormLabel>
+                                        <Select 
+                                          onValueChange={field.onChange} 
+                                          defaultValue={field.value}
+                                        >
+                                          <FormControl>
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="Select method" />
+                                            </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                            <SelectItem value="video">Video Conference</SelectItem>
+                                            <SelectItem value="in-person">In Person</SelectItem>
+                                            <SelectItem value="phone">Phone Call</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  
+                                  <FormField
+                                    control={form.control}
+                                    name="notes"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Additional Notes (Optional)</FormLabel>
+                                        <FormControl>
+                                          <Input placeholder="Any special instructions or agenda items" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  
+                                  <DialogFooter className="pt-4">
+                                    <Button variant="outline" type="button" onClick={() => setInterviewDialogOpen(false)}>
+                                      Cancel
+                                    </Button>
+                                    <Button type="submit">
+                                      Send Calendar Invitation
+                                    </Button>
+                                  </DialogFooter>
+                                </form>
+                              </Form>
                             </DialogContent>
                           </Dialog>
                         ) : (
@@ -477,37 +582,41 @@ const EngagementTech: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="text-center py-8 text-gray-500">
-                <p>Use the Performance Calculator to identify candidates for interviews.</p>
-                <p className="mt-2 text-sm">Professionals scoring between 85-95% will be eligible for interviews.</p>
-              </div>
-              
-              {interviewScheduled && (
+              {interviewScheduled ? (
                 <Card className="mt-6 border-blue-200">
                   <CardHeader>
                     <CardTitle className="text-base">Upcoming Interview</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium">Professional:</span>
-                        <span>{name}</span>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium mb-1">Professional</p>
+                          <p>{name}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium mb-1">Email</p>
+                          <p>{employeeEmail}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium mb-1">Date & Time</p>
+                          <p>{interviewDate}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium mb-1">Status</p>
+                          <p className="text-green-600 font-medium">Confirmed</p>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium">Email:</span>
-                        <span>{employeeEmail}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium">Date:</span>
-                        <span>{interviewDate}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium">Status:</span>
-                        <span className="text-green-600 font-medium">Scheduled</span>
+                      
+                      <div className="border-t pt-4 mt-4">
+                        <h4 className="text-sm font-medium mb-2">Calendar Invitation</h4>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          A calendar invitation has been sent to the professional's email. You'll both receive email notifications and calendar reminders.
+                        </p>
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="flex gap-2 justify-end">
+                  <CardFooter className="flex gap-2 justify-end border-t">
                     <Button variant="outline" size="sm" className="flex items-center gap-1">
                       <Mail className="h-3 w-3" />
                       Send Reminder
@@ -518,6 +627,14 @@ const EngagementTech: React.FC = () => {
                     </Button>
                   </CardFooter>
                 </Card>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Use the Performance Calculator to identify candidates for interviews.</p>
+                  <p className="mt-2 text-sm">Professionals scoring between 85-95% will be eligible for interviews.</p>
+                  <Button className="mt-6" onClick={() => setActiveTab("calculator")}>
+                    Go to Calculator
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
