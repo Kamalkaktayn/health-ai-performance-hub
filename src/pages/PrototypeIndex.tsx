@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import LoginForm from "@/components/LoginForm";
@@ -10,10 +11,12 @@ import {
   UserCog,
   DollarSign,
   LogOut,
-  Menu
+  Menu,
+  Cpu
 } from "lucide-react";
 import ProfessionalSuggestions from "@/components/ProfessionalSuggestions";
 import ProfessionalDetails from "@/components/ProfessionalDetails";
+import EngagementTechCalculator from "@/components/EngagementTechCalculator";
 
 const PrototypeIndex = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
@@ -134,6 +137,14 @@ const PrototypeIndex = () => {
               <DollarSign className="h-4 w-4" />
               Compensation
             </Button>
+            <Button 
+              variant={activeTab === 'engagement' ? "secondary" : "ghost"} 
+              className="w-full justify-start gap-2"
+              onClick={() => setActiveTab('engagement')}
+            >
+              <Cpu className="h-4 w-4" />
+              Engagement Tech
+            </Button>
           </div>
           
           <div className="mt-auto">
@@ -224,6 +235,19 @@ const PrototypeIndex = () => {
             <div className="bg-white p-6 rounded-lg shadow">
               <h1 className="text-xl font-bold mb-4">Compensation Dashboard</h1>
               <p>Compensation data would be displayed here.</p>
+            </div>
+          )}
+
+          {activeTab === 'engagement' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-white rounded-lg shadow border-t-4 border-t-indigo-500">
+                <h1 className="text-xl font-bold text-gray-800 mb-1">Engagement Tech Performance Calculator</h1>
+                <p className="text-gray-600">Calculate and simulate performance metrics for healthcare professionals</p>
+              </div>
+              
+              <EngagementTechCalculator 
+                professional={activeProfessional} 
+              />
             </div>
           )}
         </div>
