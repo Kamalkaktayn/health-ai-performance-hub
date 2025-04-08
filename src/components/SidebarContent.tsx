@@ -12,7 +12,8 @@ import {
   UserCog,
   DollarSign,
   LogOut,
-  PlusCircle
+  PlusCircle,
+  Activity
 } from "lucide-react";
 import { Professional } from "@/utils/dataTypes";
 
@@ -65,6 +66,14 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
         >
           <Users className="h-4 w-4" />
           Professionals
+        </Button>
+        <Button 
+          variant={activeTab === 'engagement-tech' ? "secondary" : "ghost"} 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('engagement-tech')}
+        >
+          <Activity className="h-4 w-4" />
+          Engagement Tech
         </Button>
         <Button 
           variant={activeTab === 'performance' ? "secondary" : "ghost"} 

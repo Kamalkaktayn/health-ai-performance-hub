@@ -10,6 +10,7 @@ import CompensationTable from "@/components/CompensationTable";
 import AIInsights from "@/components/AIInsights";
 import AddProfessionalDialog from "@/components/AddProfessionalDialog";
 import LoginForm from "@/components/LoginForm";
+import EngagementTech from "@/components/EngagementTech";
 import { Professional, User } from "@/utils/dataTypes";
 import { generateInitialProfessionals, mockUsers } from "@/utils/mockData";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -176,6 +177,11 @@ const Index = () => {
                 </button>
               </div>
             </div>
+          )}
+          
+          {/* Engagement Tech Tab */}
+          {activeTab === 'engagement-tech' && (
+            <EngagementTech />
           )}
           
           {/* Performance Tab */}
