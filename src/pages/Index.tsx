@@ -14,8 +14,9 @@ import EngagementTech from "@/components/EngagementTech";
 import { Professional, User } from "@/utils/dataTypes";
 import { generateInitialProfessionals, mockUsers } from "@/utils/mockData";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Video } from "lucide-react";
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -202,6 +203,33 @@ const Index = () => {
               onSelectProfessional={handleSelectProfessional}
               onDeleteProfessional={handleDeleteProfessional}
             />
+          )}
+          
+          {/* Interviews Tab */}
+          {activeTab === 'interviews' && (
+            <div className="space-y-6">
+              <Card className="overflow-hidden border-t-4 border-t-healthcare-primary">
+                <CardHeader className="bg-gradient-to-r from-healthcare-light to-white">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-xl font-bold flex items-center gap-2">
+                        <Video className="h-5 w-5 text-healthcare-primary" />
+                        Interview Management
+                      </CardTitle>
+                      <CardDescription>Schedule and manage interviews with qualified professionals</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Use the Engagement Tech section to identify and schedule interviews with professionals.</p>
+                    <p className="mt-4 text-sm text-muted-foreground">
+                      Professionals scoring between 85-95% in their performance evaluation will be eligible for interviews.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           )}
           
           {/* Settings Tab */}

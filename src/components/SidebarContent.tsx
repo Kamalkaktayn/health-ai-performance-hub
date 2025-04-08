@@ -13,7 +13,10 @@ import {
   DollarSign,
   LogOut,
   PlusCircle,
-  Activity
+  Activity,
+  Video,
+  Mail,
+  Bell
 } from "lucide-react";
 import { Professional } from "@/utils/dataTypes";
 
@@ -106,6 +109,14 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
         >
           <CalendarDays className="h-4 w-4" />
           Schedule
+        </Button>
+        <Button 
+          variant={activeTab === 'interviews' ? "secondary" : "ghost"} 
+          className="w-full justify-start gap-2"
+          onClick={() => handleTabClick('interviews')}
+        >
+          <Video className="h-4 w-4" />
+          Interviews
         </Button>
       </div>
       
