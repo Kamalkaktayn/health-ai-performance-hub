@@ -58,15 +58,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <Card className="w-full max-w-md shadow-lg border-t-4 border-t-indigo-600">
-        <CardHeader className="text-center bg-gradient-to-r from-indigo-100 to-white">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <Card className="w-full max-w-md shadow-lg border-t-4 border-t-healthcare-primary">
+        <CardHeader className="text-center bg-gradient-to-r from-healthcare-light to-white">
           <div className="flex justify-center mb-2">
-            <div className="rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-2 shadow-lg">
+            <div className="rounded-full bg-gradient-to-r from-blue-400 to-purple-500 p-2 shadow-lg">
               <UserCircle2 className="h-10 w-10 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-gradient-primary bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">HealthPerform AI</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gradient-primary bg-gradient-to-r from-blue-600 via-healthcare-primary to-purple-600">HealthPerform AI</CardTitle>
           <CardDescription>Sign in to access the performance management system</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
@@ -105,18 +105,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600">
+              <Button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                 Sign In
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2 text-sm text-gray-500">
-          <div className="text-center p-3 rounded-md bg-indigo-50 border border-indigo-100">
-            <div className="font-medium text-indigo-700 mb-1">Demo Account</div>
-            <div className="text-xs flex flex-col">
-              <span className="font-medium">Email: admin@healthperform.org</span>
-              <span className="font-medium">Password: admin123</span>
+          <div className="text-center p-3 rounded-md bg-blue-50 border border-blue-100">
+            <div className="font-medium text-blue-700 mb-1">Demo Account</div>
+            <div className="text-xs">
+              <div className="font-medium">Email: admin@healthperform.org</div>
+              <div className="font-medium">Password: admin123</div>
             </div>
           </div>
         </CardFooter>
