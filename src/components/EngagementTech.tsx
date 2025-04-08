@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,15 +10,27 @@ import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Role, Metric, getRoleMetrics, calculatePerformance } from "@/utils/dataTypes";
-import { BarChart, Activity, Users, ChartLine, Calendar, Mail, Video, Bell, Check, X } from "lucide-react";
+import { BarChart, Activity, Users, ChartLine, Calendar, Mail, Video, Bell, Check, X, Clock, CalendarX, CalendarClock, CalendarCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+
+interface Interview {
+  id: string;
+  professionalName: string;
+  email: string;
+  dateTime: string;
+  originalDate: Date;
+  time: string;
+  method: string;
+  notes?: string;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'postponed';
+}
 
 const EngagementTech: React.FC = () => {
   const [name, setName] = useState("");
@@ -37,6 +49,10 @@ const EngagementTech: React.FC = () => {
   const [interviewScheduled, setInterviewScheduled] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>("calculator");
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [postponeDialogOpen, setPostponeDialogOpen] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null);
+  const [cancelConfirmDialogOpen, setCancelConfirmDialogOpen] = useState(false);
 
   // Form schema for interview scheduling
   const formSchema = z.object({
@@ -47,6 +63,13 @@ const EngagementTech: React.FC = () => {
     notes: z.string().optional(),
   });
 
+  // Form schema for postpone interview
+  const postponeFormSchema = z.object({
+    date: z.date({ required_error: "Please select a new date" }),
+    time: z.string().min(1, { message: "Please select a time" }),
+    reason: z.string().optional(),
+  });
+
   // Initialize the form
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,6 +78,15 @@ const EngagementTech: React.FC = () => {
       time: "10:00",
       method: "video",
       notes: "",
+    },
+  });
+
+  // Initialize the postpone form
+  const postponeForm = useForm<z.infer<typeof postponeFormSchema>>({
+    resolver: zodResolver(postponeFormSchema),
+    defaultValues: {
+      time: "10:00",
+      reason: "",
     },
   });
 
@@ -71,6 +103,31 @@ const EngagementTech: React.FC = () => {
     setAiUsageExceeded(false);
     setOverallPerformance(null);
   }, [role]);
+
+  // Load any saved interviews when component mounts
+  useEffect(() => {
+    const savedInterviews = localStorage.getItem('interviews');
+    if (savedInterviews) {
+      try {
+        const parsedInterviews = JSON.parse(savedInterviews);
+        // Convert string dates back to Date objects
+        const processedInterviews = parsedInterviews.map((interview: any) => ({
+          ...interview,
+          originalDate: new Date(interview.originalDate)
+        }));
+        setInterviews(processedInterviews);
+      } catch (error) {
+        console.error("Error parsing saved interviews:", error);
+      }
+    }
+  }, []);
+
+  // Save interviews to localStorage whenever they change
+  useEffect(() => {
+    if (interviews.length > 0) {
+      localStorage.setItem('interviews', JSON.stringify(interviews));
+    }
+  }, [interviews]);
 
   const handleRoleChange = (value: string) => {
     setRole(value as Role);
@@ -129,24 +186,85 @@ const EngagementTech: React.FC = () => {
     const formattedDate = format(values.date, "yyyy-MM-dd");
     const dateTimeString = `${formattedDate} at ${values.time}`;
     
+    // Create a unique ID for the interview
+    const newInterviewId = `interview-${Date.now()}`;
+    
+    // Create a new interview object
+    const newInterview: Interview = {
+      id: newInterviewId,
+      professionalName: name,
+      email: values.email,
+      dateTime: dateTimeString,
+      originalDate: values.date,
+      time: values.time,
+      method: values.method,
+      notes: values.notes,
+      status: 'scheduled'
+    };
+    
+    // Add the new interview to the interviews array
+    setInterviews(prev => [...prev, newInterview]);
+    
     setInterviewScheduled(true);
     setInterviewDialogOpen(false);
     setEmployeeEmail(values.email);
     setInterviewDate(dateTimeString);
     
-    // Simulate sending calendar invite
-    console.log("Sending calendar invite to:", values.email);
-    console.log("Interview details:", {
-      date: formattedDate,
-      time: values.time,
-      method: values.method,
-      notes: values.notes
-    });
-    
     // Show success notification
     toast({
       title: "Interview Scheduled",
       description: `Interview scheduled with ${name} on ${dateTimeString}. Calendar invitation sent to ${values.email}.`,
+    });
+  };
+  
+  const handleCancelInterview = () => {
+    if (!selectedInterview) return;
+    
+    // Update the interview status to cancelled
+    setInterviews(prevInterviews => 
+      prevInterviews.map(interview => 
+        interview.id === selectedInterview.id 
+          ? { ...interview, status: 'cancelled' } 
+          : interview
+      )
+    );
+    
+    setCancelConfirmDialogOpen(false);
+    
+    toast({
+      title: "Interview Cancelled",
+      description: `Interview with ${selectedInterview.professionalName} on ${selectedInterview.dateTime} has been cancelled.`,
+    });
+  };
+  
+  const handlePostponeInterview = (values: z.infer<typeof postponeFormSchema>) => {
+    if (!selectedInterview) return;
+    
+    const formattedDate = format(values.date, "yyyy-MM-dd");
+    const newDateTimeString = `${formattedDate} at ${values.time}`;
+    
+    // Update the interview with new date and status
+    setInterviews(prevInterviews => 
+      prevInterviews.map(interview => 
+        interview.id === selectedInterview.id 
+          ? { 
+              ...interview, 
+              dateTime: newDateTimeString,
+              originalDate: values.date,
+              time: values.time,
+              status: 'postponed',
+              notes: values.reason ? `${interview.notes || ''}
+Postponed: ${values.reason}` : interview.notes
+            } 
+          : interview
+      )
+    );
+    
+    setPostponeDialogOpen(false);
+    
+    toast({
+      title: "Interview Postponed",
+      description: `Interview with ${selectedInterview.professionalName} has been rescheduled to ${newDateTimeString}.`,
     });
   };
   
@@ -190,6 +308,20 @@ const EngagementTech: React.FC = () => {
     } else if (step === 3) {
       setStep(2);
     }
+  };
+
+  const openPostponeDialog = (interview: Interview) => {
+    setSelectedInterview(interview);
+    // Set default date to 7 days from original interview
+    const defaultDate = addDays(interview.originalDate, 7);
+    postponeForm.setValue('date', defaultDate);
+    postponeForm.setValue('time', interview.time);
+    setPostponeDialogOpen(true);
+  };
+
+  const openCancelDialog = (interview: Interview) => {
+    setSelectedInterview(interview);
+    setCancelConfirmDialogOpen(true);
   };
 
   return (
@@ -582,55 +714,96 @@ const EngagementTech: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              {interviewScheduled ? (
-                <Card className="mt-6 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="text-base">Upcoming Interview</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
+              {interviews.length > 0 ? (
+                <div className="space-y-4">
+                  {interviews.map((interview) => (
+                    <Card key={interview.id} className={`mt-4 border-${
+                      interview.status === 'scheduled' ? 'blue' : 
+                      interview.status === 'completed' ? 'green' : 
+                      interview.status === 'cancelled' ? 'red' : 'amber'}-200`}>
+                      <CardHeader className={`pb-2 bg-${
+                        interview.status === 'scheduled' ? 'blue' : 
+                        interview.status === 'completed' ? 'green' : 
+                        interview.status === 'cancelled' ? 'red' : 'amber'}-50 flex justify-between items-center`}>
                         <div>
-                          <p className="text-sm font-medium mb-1">Professional</p>
-                          <p>{name}</p>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            {interview.status === 'scheduled' && <Calendar className="h-4 w-4" />}
+                            {interview.status === 'postponed' && <CalendarClock className="h-4 w-4" />}
+                            {interview.status === 'cancelled' && <CalendarX className="h-4 w-4" />}
+                            {interview.status === 'completed' && <CalendarCheck className="h-4 w-4" />}
+                            Interview with {interview.professionalName}
+                          </CardTitle>
+                          <CardDescription>
+                            {interview.dateTime} ({interview.method === 'video' ? 'Video Conference' : 
+                              interview.method === 'in-person' ? 'In Person' : 'Phone Call'})
+                          </CardDescription>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium mb-1">Email</p>
-                          <p>{employeeEmail}</p>
+                        <span className={`px-2 py-1 bg-${
+                          interview.status === 'scheduled' ? 'blue' : 
+                          interview.status === 'completed' ? 'green' : 
+                          interview.status === 'cancelled' ? 'red' : 'amber'}-100 text-${
+                          interview.status === 'scheduled' ? 'blue' : 
+                          interview.status === 'completed' ? 'green' : 
+                          interview.status === 'cancelled' ? 'red' : 'amber'}-800 rounded-full text-xs font-medium capitalize`}>
+                          {interview.status}
+                        </span>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm font-medium mb-1">Professional</p>
+                            <p>{interview.professionalName}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium mb-1">Email</p>
+                            <p>{interview.email}</p>
+                          </div>
+                          {interview.notes && (
+                            <div className="col-span-2">
+                              <p className="text-sm font-medium mb-1">Notes</p>
+                              <p className="text-sm whitespace-pre-line">{interview.notes}</p>
+                            </div>
+                          )}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium mb-1">Date & Time</p>
-                          <p>{interviewDate}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium mb-1">Status</p>
-                          <p className="text-green-600 font-medium">Confirmed</p>
-                        </div>
-                      </div>
+                      </CardContent>
                       
-                      <div className="border-t pt-4 mt-4">
-                        <h4 className="text-sm font-medium mb-2">Calendar Invitation</h4>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          A calendar invitation has been sent to the professional's email. You'll both receive email notifications and calendar reminders.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="flex gap-2 justify-end border-t">
-                    <Button variant="outline" size="sm" className="flex items-center gap-1">
-                      <Mail className="h-3 w-3" />
-                      Send Reminder
-                    </Button>
-                    <Button size="sm" className="flex items-center gap-1">
-                      <Video className="h-3 w-3" />
-                      Start Interview
-                    </Button>
-                  </CardFooter>
-                </Card>
+                      {interview.status === 'scheduled' && (
+                        <CardFooter className="flex gap-2 justify-end border-t pt-4">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center gap-1 border-red-300 text-red-700"
+                            onClick={() => openCancelDialog(interview)}
+                          >
+                            <CalendarX className="h-3 w-3" />
+                            Cancel
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center gap-1 border-amber-300 text-amber-700"
+                            onClick={() => openPostponeDialog(interview)}
+                          >
+                            <Clock className="h-3 w-3" />
+                            Postpone
+                          </Button>
+                          <Button size="sm" className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            Send Reminder
+                          </Button>
+                          <Button size="sm" className="flex items-center gap-1 bg-healthcare-primary hover:bg-healthcare-accent">
+                            <Video className="h-3 w-3" />
+                            Start Interview
+                          </Button>
+                        </CardFooter>
+                      )}
+                    </Card>
+                  ))}
+                </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <p>Use the Performance Calculator to identify candidates for interviews.</p>
-                  <p className="mt-2 text-sm">Professionals scoring between 85-95% will be eligible for interviews.</p>
+                  <p>No interviews scheduled yet.</p>
+                  <p className="mt-2 text-sm">Use the Performance Calculator to identify candidates for interviews.</p>
                   <Button className="mt-6" onClick={() => setActiveTab("calculator")}>
                     Go to Calculator
                   </Button>
@@ -638,6 +811,126 @@ const EngagementTech: React.FC = () => {
               )}
             </CardContent>
           </Card>
+          
+          {/* Postpone Interview Dialog */}
+          <Dialog open={postponeDialogOpen} onOpenChange={setPostponeDialogOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Postpone Interview</DialogTitle>
+                <DialogDescription>
+                  Reschedule the interview to a different date and time.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <Form {...postponeForm}>
+                <form onSubmit={postponeForm.handleSubmit(handlePostponeInterview)} className="space-y-4 py-4">
+                  <FormField
+                    control={postponeForm.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>New Interview Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="justify-start text-left font-normal"
+                            >
+                              <Calendar className="mr-2 h-4 w-4" />
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Select new date</span>
+                              )}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <CalendarComponent
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date < new Date(new Date().setHours(0, 0, 0, 0))
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={postponeForm.control}
+                    name="time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>New Interview Time</FormLabel>
+                        <FormControl>
+                          <Input type="time" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={postponeForm.control}
+                    name="reason"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Reason for Postponement (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Why are you rescheduling this interview?" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <DialogFooter className="pt-4">
+                    <Button variant="outline" type="button" onClick={() => setPostponeDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="bg-amber-600 hover:bg-amber-700">
+                      Reschedule Interview
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+          
+          {/* Cancel Interview Confirmation Dialog */}
+          <Dialog open={cancelConfirmDialogOpen} onOpenChange={setCancelConfirmDialogOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Cancel Interview</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to cancel this interview? This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="py-4">
+                {selectedInterview && (
+                  <div className="space-y-2 border rounded-md p-3 bg-gray-50">
+                    <p><span className="font-medium">Professional:</span> {selectedInterview.professionalName}</p>
+                    <p><span className="font-medium">Scheduled for:</span> {selectedInterview.dateTime}</p>
+                  </div>
+                )}
+              </div>
+              
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setCancelConfirmDialogOpen(false)}>
+                  Keep Interview
+                </Button>
+                <Button variant="destructive" onClick={handleCancelInterview}>
+                  Cancel Interview
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
         
         <TabsContent value="ai-usage">

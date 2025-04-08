@@ -16,7 +16,20 @@ import { generateInitialProfessionals, mockUsers } from "@/utils/mockData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Video } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Video, Calendar, Clock, X } from "lucide-react";
+
+interface Interview {
+  id: string;
+  professionalName: string;
+  email: string;
+  dateTime: string;
+  originalDate: Date;
+  time: string;
+  method: string;
+  notes?: string;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'postponed';
+}
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -28,6 +41,7 @@ const Index = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [savedInterviews, setSavedInterviews] = useState<Interview[]>([]);
   
   useEffect(() => {
     // Generate initial data
@@ -38,6 +52,26 @@ const Index = () => {
     // Update sidebar visibility based on mobile state
     setIsSidebarOpen(!isMobile);
   }, [isMobile]);
+  
+  // Load saved interviews when active tab changes to interviews
+  useEffect(() => {
+    if (activeTab === 'interviews') {
+      const interviewsData = localStorage.getItem('interviews');
+      if (interviewsData) {
+        try {
+          const parsedInterviews = JSON.parse(interviewsData);
+          // Convert string dates back to Date objects
+          const processedInterviews = parsedInterviews.map((interview: any) => ({
+            ...interview,
+            originalDate: new Date(interview.originalDate)
+          }));
+          setSavedInterviews(processedInterviews);
+        } catch (error) {
+          console.error("Error parsing saved interviews:", error);
+        }
+      }
+    }
+  }, [activeTab]);
   
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -106,6 +140,10 @@ const Index = () => {
       description: "You have been logged out successfully",
       variant: "default"
     });
+  };
+  
+  const goToEngagementTech = () => {
+    setActiveTab('engagement-tech');
   };
   
   if (!isLoggedIn) {
@@ -221,12 +259,71 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">Use the Engagement Tech section to identify and schedule interviews with professionals.</p>
-                    <p className="mt-4 text-sm text-muted-foreground">
-                      Professionals scoring between 85-95% in their performance evaluation will be eligible for interviews.
-                    </p>
-                  </div>
+                  {savedInterviews.length > 0 ? (
+                    <div className="space-y-4">
+                      {savedInterviews.map((interview) => (
+                        <Card key={interview.id} className={`mt-4 border-${
+                          interview.status === 'scheduled' ? 'blue' : 
+                          interview.status === 'completed' ? 'green' : 
+                          interview.status === 'cancelled' ? 'red' : 'amber'}-200`}>
+                          <CardHeader className={`pb-2 bg-${
+                            interview.status === 'scheduled' ? 'blue' : 
+                            interview.status === 'completed' ? 'green' : 
+                            interview.status === 'cancelled' ? 'red' : 'amber'}-50 flex justify-between items-center`}>
+                            <div>
+                              <CardTitle className="text-base flex items-center gap-2">
+                                {interview.status === 'scheduled' && <Calendar className="h-4 w-4" />}
+                                {interview.status === 'postponed' && <Clock className="h-4 w-4" />}
+                                {interview.status === 'cancelled' && <X className="h-4 w-4" />}
+                                Interview with {interview.professionalName}
+                              </CardTitle>
+                              <CardDescription>
+                                {interview.dateTime} ({interview.method === 'video' ? 'Video Conference' : 
+                                  interview.method === 'in-person' ? 'In Person' : 'Phone Call'})
+                              </CardDescription>
+                            </div>
+                            <span className={`px-2 py-1 bg-${
+                              interview.status === 'scheduled' ? 'blue' : 
+                              interview.status === 'completed' ? 'green' : 
+                              interview.status === 'cancelled' ? 'red' : 'amber'}-100 text-${
+                              interview.status === 'scheduled' ? 'blue' : 
+                              interview.status === 'completed' ? 'green' : 
+                              interview.status === 'cancelled' ? 'red' : 'amber'}-800 rounded-full text-xs font-medium capitalize`}>
+                              {interview.status}
+                            </span>
+                          </CardHeader>
+                          <CardContent className="pt-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-sm font-medium mb-1">Professional</p>
+                                <p>{interview.professionalName}</p>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium mb-1">Email</p>
+                                <p>{interview.email}</p>
+                              </div>
+                              {interview.notes && (
+                                <div className="col-span-2">
+                                  <p className="text-sm font-medium mb-1">Notes</p>
+                                  <p className="text-sm whitespace-pre-line">{interview.notes}</p>
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No interviews have been scheduled yet.</p>
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        Use the Engagement Tech section to identify and schedule interviews with professionals.
+                      </p>
+                      <Button onClick={goToEngagementTech} className="mt-6">
+                        Go to Engagement Tech
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>

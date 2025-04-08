@@ -44,6 +44,23 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
     setActiveProfessional(null);
   };
   
+  // Count scheduled interviews
+  const scheduledInterviews = () => {
+    const savedInterviews = localStorage.getItem('interviews');
+    if (savedInterviews) {
+      try {
+        const interviews = JSON.parse(savedInterviews);
+        return interviews.filter((interview: any) => interview.status === 'scheduled').length;
+      } catch (error) {
+        console.error("Error parsing saved interviews:", error);
+        return 0;
+      }
+    }
+    return 0;
+  };
+  
+  const interviewCount = scheduledInterviews();
+  
   return (
     <div className="flex flex-col h-full p-4">
       <div className="flex items-center gap-2 mb-6">
@@ -117,6 +134,11 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
         >
           <Video className="h-4 w-4" />
           Interviews
+          {interviewCount > 0 && (
+            <span className="ml-auto bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {interviewCount}
+            </span>
+          )}
         </Button>
         <Button 
           variant={activeTab === 'notifications' ? "secondary" : "ghost"} 
