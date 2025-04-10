@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Card, 
@@ -44,9 +43,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProfessionalDetailsProps {
   professional: Professional;
+  onEditClick?: () => void;
 }
 
-const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional }) => {
+const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional, onEditClick }) => {
   const recommendations: AIRecommendation[] = getRecommendations(professional.metrics, professional.role);
   const compensationTier = getCompensationTier(professional.performance);
   
@@ -79,7 +79,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
     return "bg-red-500";
   };
 
-  // AI Usage suggestion based on percentage
   const getAIUsageSuggestion = () => {
     const { aiUsage, role } = professional;
     
@@ -171,11 +170,9 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
     }
   };
 
-  // Performance suggestion based on professional's role and metrics
   const getPerformanceSuggestions = () => {
     const suggestions = [];
     
-    // Patient interaction quality for doctors
     if (['General Doctor', 'Psychiatrist'].includes(professional.role)) {
       const patientMetric = professional.metrics.find(m => 
         m.name.includes('Patient') || m.name.includes('Satisfaction')
@@ -205,7 +202,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
       }
     }
     
-    // Turnaround time for Radiologists
     if (professional.role === 'Radiologist') {
       const tatMetric = professional.metrics.find(m => m.name.includes('Turnaround'));
       
@@ -233,7 +229,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
       }
     }
     
-    // Lab Technician specific suggestions
     if (professional.role === 'Lab Technician') {
       const documentationMetric = professional.metrics.find(m => m.name.includes('Documentation'));
       
@@ -261,7 +256,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
       }
     }
     
-    // Healthcare IT specific suggestions
     if (professional.role === 'Healthcare IT') {
       const implementationMetric = professional.metrics.find(m => 
         m.name.includes('Project') || m.name.includes('Delivery')
@@ -291,7 +285,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
       }
     }
     
-    // Generic suggestion based on lowest metric
     const lowestMetric = [...professional.metrics].sort((a, b) => a.score - b.score)[0];
     if (lowestMetric && lowestMetric.score < 75) {
       suggestions.push({
@@ -329,7 +322,7 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={onEditClick}>
                 <PenLine className="h-4 w-4 mr-2" />
                 Edit
               </Button>
@@ -401,7 +394,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
                 </div>
               </div>
               
-              {/* Professional Summary Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="col-span-1 bg-white p-6 rounded-lg shadow-md border border-gray-100">
                   <div className="flex items-center gap-2 mb-4">
@@ -482,7 +474,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
               </div>
             </TabsContent>
             
-            {/* Skills & Expertise Tab */}
             <TabsContent value="skills" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {professional.skills.map((skill, index) => (
@@ -541,7 +532,6 @@ const ProfessionalDetails: React.FC<ProfessionalDetailsProps> = ({ professional 
               </Card>
             </TabsContent>
             
-            {/* New Suggestions Tab */}
             <TabsContent value="suggestions" className="space-y-6">
               <div className="grid grid-cols-1 gap-6">
                 <Card className="overflow-hidden border-t-4 border-t-healthcare-primary">
