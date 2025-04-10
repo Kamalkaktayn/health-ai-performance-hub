@@ -14,19 +14,30 @@ const UpdateProfessionalDetails: React.FC<UpdateProfessionalDetailsProps> = ({
   onUpdateProfessional
 }) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentProfessional, setCurrentProfessional] = useState<Professional>(professional);
+
+  // Update local state when professional prop changes
+  React.useEffect(() => {
+    setCurrentProfessional(professional);
+  }, [professional]);
 
   const handleEditClick = () => {
     setIsEditDialogOpen(true);
   };
 
+  const handleUpdateProfessional = (updatedProfessional: Professional) => {
+    setCurrentProfessional(updatedProfessional);
+    onUpdateProfessional(updatedProfessional);
+  };
+
   return (
     <>
-      <ProfessionalDetails professional={professional} onEditClick={handleEditClick} />
+      <ProfessionalDetails professional={currentProfessional} onEditClick={handleEditClick} />
       <EditProfessionalDialog 
-        professional={professional}
+        professional={currentProfessional}
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        onUpdate={onUpdateProfessional}
+        onUpdate={handleUpdateProfessional}
       />
     </>
   );

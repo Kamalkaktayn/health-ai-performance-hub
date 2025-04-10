@@ -23,6 +23,8 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { User as UserType } from "@/utils/dataTypes";
 import { useToast } from "@/hooks/use-toast";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 
 interface AdminSettingsProps {
   currentUser: UserType | null;
@@ -37,12 +39,23 @@ const AdminSettings: React.FC<AdminSettingsProps> = ({ currentUser, onUpdateUser
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  const form = useForm({
+    defaultValues: {
+      name: currentUser?.name || '',
+      email: currentUser?.email || '',
+    }
+  });
 
   React.useEffect(() => {
     if (currentUser) {
       setEditedUser({...currentUser});
+      form.reset({
+        name: currentUser.name,
+        email: currentUser.email
+      });
     }
-  }, [currentUser]);
+  }, [currentUser, form]);
 
   if (!currentUser || !editedUser) return null;
 
