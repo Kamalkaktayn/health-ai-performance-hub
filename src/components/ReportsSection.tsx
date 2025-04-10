@@ -8,16 +8,16 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart, BarChart3, Download, FileText, Printer, Share2 } from "lucide-react";
+import { BarChart3, Download, FileText, Printer, Share2 } from "lucide-react";
 import { 
-  Chart as ChartComponent,
-  XAxis,
-  YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   Bar,
   ResponsiveContainer,
+  BarChart,
+  XAxis,
+  YAxis,
   LineChart,
   Line
 } from 'recharts';
@@ -197,14 +197,14 @@ const ReportsSection: React.FC<ReportsSectionProps> = ({ professionals }) => {
               variant={reportType === 'aiUsage' ? "default" : "outline"} 
               onClick={() => setReportType('aiUsage')}
             >
-              <BarChart className="h-4 w-4 mr-2" />
+              <BarChart3 className="h-4 w-4 mr-2" />
               AI Usage
             </Button>
             <Button 
               variant={reportType === 'compensation' ? "default" : "outline"} 
               onClick={() => setReportType('compensation')}
             >
-              <BarChart className="h-4 w-4 mr-2" />
+              <BarChart3 className="h-4 w-4 mr-2" />
               Compensation
             </Button>
           </div>
