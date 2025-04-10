@@ -53,6 +53,14 @@ export interface User {
   password: string;
   name: string;
   role: 'admin' | 'manager' | 'viewer';
+  additionalInfo?: {
+    title?: string;
+    department?: string;
+    location?: string;
+    bio?: string;
+    joinDate?: string;
+    employeeId?: string;
+  };
 }
 
 export const compensationTiers: CompensationTier[] = [
